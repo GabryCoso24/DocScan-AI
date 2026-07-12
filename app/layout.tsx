@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DocScan AI — Estrazione Dati da Documenti con AI",
-  description: "Carica scontrini, fatture o qualsiasi documento e ottieni dati strutturati in JSON istantaneamente grazie all'AI. MVP realizzato per la candidatura Mamazen.",
+  title: "DocScan AI — AI Document Data Extraction",
+  description: "Upload receipts, invoices, or any document and get structured JSON instantly with AI. MVP built for the Mamazen application process.",
 };
 
 export default function RootLayout({

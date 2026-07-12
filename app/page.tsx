@@ -32,9 +32,9 @@ export default function Home() {
         <header className="header">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <span className="header-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {activeView === "upload" && <><Search size={20} /> Analizza Documento</>}
-              {activeView === "history" && <><History size={20} /> Storico Estrazioni</>}
-              {activeView === "settings" && <><SettingsIcon size={20} /> Impostazioni</>}
+              {activeView === "upload" && <><Search size={20} /> Analyze Document</>}
+              {activeView === "history" && <><History size={20} /> Extraction History</>}
+              {activeView === "settings" && <><SettingsIcon size={20} /> Settings</>}
             </span>
           </div>
         </header>

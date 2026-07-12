@@ -59,15 +59,15 @@ export default function UploadView({
   const processFile = useCallback(
     async (file: File) => {
       if (!isSupportedFile(file)) {
-        onToast("Per favore carica un'immagine o un PDF (JPG, PNG, WebP, HEIC, PDF)", "error");
+        onToast("Please upload an image or PDF (JPG, PNG, WebP, HEIC, PDF)", "error");
         return;
       }
       if (file.size > 20 * 1024 * 1024) {
-        onToast("File troppo grande. Massimo 20MB", "error");
+        onToast("File too large. Maximum 20MB", "error");
         return;
       }
       if (cooldown > 0) {
-        onToast(`⏳ Aspetta ancora ${cooldown}s prima di riprovare`, "error");
+        onToast(`⏳ Wait another ${cooldown}s before trying again`, "error");
         return;
       }
 
@@ -78,11 +78,11 @@ export default function UploadView({
       setCurrentResult(null);
       setIsProcessing(true);
       setProgress(10);
-      setProgressLabel(isPdfFile(file) ? "Rendering PDF..." : "Caricamento immagine...");
+      setProgressLabel(isPdfFile(file) ? "Rendering PDF..." : "Uploading image...");
 
       try {
         setProgress(30);
-        setProgressLabel("Analisi con AI in corso...");
+        setProgressLabel("Analyzing with AI...");
 
         const response = await fetch("/api/extract", {
           method: "POST",
@@ -104,7 +104,7 @@ export default function UploadView({
             // Pass the file so it auto-retries after countdown
             startCooldown(errData.retry_after_seconds, file);
           }
-          throw new Error(errData.error || `Errore API ${response.status}`);
+          throw new Error(errData.error || `API error ${response.status}`);
         }
 
         const respData = await response.json();
@@ -114,7 +114,7 @@ export default function UploadView({
         const isDemo = respData.mode === "demo";
 
         setProgress(95);
-        setProgressLabel("Completato!");
+        setProgressLabel("Completed!");
         await sleep(300);
 
         const result: ExtractionResult = {
@@ -135,8 +135,8 @@ export default function UploadView({
         setProgress(100);
         onToast(
           isDemo
-            ? "Demo completata! (modalità senza API key)"
-            : `Estrazione completata in ${(processingTime / 1000).toFixed(1)}s`,
+            ? "Demo completed! (no API key mode)"
+            : `Extraction completed in ${(processingTime / 1000).toFixed(1)}s`,
           "success"
         );
       } catch (err: unknown) {
@@ -151,11 +151,11 @@ export default function UploadView({
           processing_time_ms: 0,
           status: "error",
           data: null,
-          error: error.message || "Errore sconosciuto",
+          error: error.message || "Unknown error",
         };
         setCurrentResult(result);
         onResult(result);
-        onToast(`Errore: ${error.message}`, "error");
+        onToast(`Error: ${error.message}`, "error");
       } finally {
         setIsProcessing(false);
         setProgress(0);
@@ -189,9 +189,9 @@ export default function UploadView({
     <div>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="page-title">Analizza Documento</h1>
+          <h1 className="page-title">Analyze Document</h1>
           <p className="page-subtitle">
-            Carica uno scontrino, fattura o documento — l&apos;AI estrae tutti i dati in JSON strutturato
+            Upload a receipt, invoice, or document — AI extracts all data into structured JSON
           </p>
         </div>
       </div>
@@ -212,10 +212,10 @@ export default function UploadView({
               <Clock size={20} color="var(--accent)" />
               <div>
                 <div style={{ fontWeight: 600, fontSize: 14, color: "var(--accent-light)" }}>
-                  Rate limit — riprovo tra {cooldown}s in automatico
+                  Rate limit — retrying automatically in {cooldown}s
                 </div>
                 <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }}>
-                  OpenRouter free tier limit raggiunto. Attendi il retry automatico.
+                  OpenRouter free tier limit reached. Please wait for the automatic retry.
                 </div>
               </div>
             </div>
@@ -279,16 +279,16 @@ export default function UploadView({
               <FileUp size={48} strokeWidth={1} color="var(--text-secondary)" />
             </div>
             <h2 className="upload-title">
-              {dragOver ? "Rilascia qui" : "Trascina il documento qui"}
+              {dragOver ? "Drop here" : "Drag the document here"}
             </h2>
-            <p className="upload-subtitle">oppure clicca per selezionare un file</p>
+            <p className="upload-subtitle">or click to select a file</p>
             <div className="upload-formats">
               {["JPG", "PNG", "WebP", "HEIC", "PDF"].map((fmt) => (
                 <span key={fmt} className="format-tag">{fmt}</span>
               ))}
             </div>
             <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 12 }}>
-              PDF supportato: viene renderizzata la prima pagina in immagine · Max 20MB
+              PDF supported: the first page is rendered as an image · Max 20MB
             </p>
           </>
         )}
@@ -356,7 +356,7 @@ async function renderPdfFirstPageToDataUrl(file: File): Promise<string> {
   const context = canvas.getContext("2d");
 
   if (!context) {
-    throw new Error("Impossibile creare il canvas per il PDF");
+    throw new Error("Unable to create a canvas for the PDF");
   }
 
   canvas.width = viewport.width;

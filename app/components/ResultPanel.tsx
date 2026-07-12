@@ -30,22 +30,19 @@ export default function ResultPanel({ result, previewUrl }: ResultPanelProps) {
   };
 
   const docTypeLabel: Record<string, React.ReactNode> = {
-    receipt: <><Receipt size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Scontrino</>,
-    invoice: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Fattura</>,
-    contract: <><ScrollText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Contratto</>,
-    id_document: <><IdCard size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Documento ID</>,
-    other: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Altro</>,
+    receipt: <><Receipt size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Receipt</>,
+    invoice: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Invoice</>,
+    contract: <><ScrollText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Contract</>,
+    id_document: <><IdCard size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> ID Document</>,
+    other: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Other</>,
   };
 
   if (result.status === "error") {
     return (
-      <div
-        className="card mt-4"
-        style={{ borderColor: "rgba(239,68,68,0.3)" }}
-      >
+      <div className="card mt-4" style={{ borderColor: "rgba(239,68,68,0.3)" }}>
         <div className="card-header">
           <span className="card-title" style={{ color: "var(--error)", display: "flex", alignItems: "center", gap: 6 }}>
-            <AlertCircle size={18} /> Errore durante l&apos;estrazione
+            <AlertCircle size={18} /> Extraction error
           </span>
         </div>
         <div className="card-body">
@@ -59,74 +56,48 @@ export default function ResultPanel({ result, previewUrl }: ResultPanelProps) {
 
   return (
     <div style={{ marginTop: 24 }}>
-      {/* Meta row */}
       <div className="flex items-center gap-2 mb-4" style={{ flexWrap: "wrap" }}>
         <span
           className={`badge ${result.status === "success" ? "badge-success" : "badge-error"}`}
           style={{ display: "flex", alignItems: "center", gap: 4 }}
         >
-          {result.status === "success" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />} Estratto
+          {result.status === "success" ? <CheckCircle2 size={12} /> : <AlertCircle size={12} />} Extracted
         </span>
         <span className={`doc-type ${docTypeClass[data?.document_type] || "doc-other"}`} style={{ display: "flex", alignItems: "center" }}>
-          {docTypeLabel[data?.document_type] || <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Documento</>}
+          {docTypeLabel[data?.document_type] || <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Document</>}
         </span>
         <span className="badge badge-processing" style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <Database size={12} /> {result.model}
         </span>
-        <span
-          style={{
-            fontSize: 12,
-            color: "var(--text-muted)",
-            marginLeft: "auto",
-          }}
-        >
+        <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: "auto" }}>
           <span style={{ display: "flex", alignItems: "center", gap: 4 }}><Zap size={12} color="var(--warning)" /> {result.processing_time_ms}ms · {result.filename}</span>
         </span>
       </div>
 
-      {/* Tabs */}
       <div className="tabs">
-        <button
-          id="tab-structured"
-          className={`tab ${activeTab === "structured" ? "active" : ""}`}
-          onClick={() => setActiveTab("structured")}
-        >
-          <Database size={14} /> Dati Strutturati
+        <button id="tab-structured" className={`tab ${activeTab === "structured" ? "active" : ""}`} onClick={() => setActiveTab("structured")}>
+          <Database size={14} /> Structured Data
         </button>
-        <button
-          id="tab-items"
-          className={`tab ${activeTab === "items" ? "active" : ""}`}
-          onClick={() => setActiveTab("items")}
-        >
-          <ShoppingCart size={14} /> Articoli ({data?.line_items?.length || 0})
+        <button id="tab-items" className={`tab ${activeTab === "items" ? "active" : ""}`} onClick={() => setActiveTab("items")}>
+          <ShoppingCart size={14} /> Items ({data?.line_items?.length || 0})
         </button>
-        <button
-          id="tab-json"
-          className={`tab ${activeTab === "json" ? "active" : ""}`}
-          onClick={() => setActiveTab("json")}
-        >
-          <Code size={14} /> JSON Raw
+        <button id="tab-json" className={`tab ${activeTab === "json" ? "active" : ""}`} onClick={() => setActiveTab("json")}>
+          <Code size={14} /> Raw JSON
         </button>
       </div>
 
       <div className="two-col">
-        {/* Left: Image preview */}
         <div className="card" style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 220px)", minHeight: 500 }}>
           <div className="card-header">
             <span className="card-title" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <ImageIcon size={18} /> Documento
+              <ImageIcon size={18} /> Document
             </span>
             <div className="confidence-bar" style={{ width: 160 }}>
-              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Confidenza</span>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>Confidence</span>
               <div className="confidence-track" style={{ flex: 1 }}>
-                <div
-                  className="confidence-fill"
-                  style={{ width: `${(data?.confidence || 0) * 100}%` }}
-                />
+                <div className="confidence-fill" style={{ width: `${(data?.confidence || 0) * 100}%` }} />
               </div>
-              <span className="confidence-label">
-                {Math.round((data?.confidence || 0) * 100)}%
-              </span>
+              <span className="confidence-label">{Math.round((data?.confidence || 0) * 100)}%</span>
             </div>
           </div>
           <div className="card-body" style={{ padding: 0, display: "flex", flexDirection: "column", flex: 1, overflowY: "auto" }}>
@@ -176,34 +147,25 @@ export default function ResultPanel({ result, previewUrl }: ResultPanelProps) {
             )}
           </div>
           {data?.raw_text_summary && (
-            <div
-              style={{
-                padding: "12px 16px",
-                borderTop: "1px solid var(--border)",
-                fontSize: 12,
-                color: "var(--text-secondary)",
-                lineHeight: 1.5,
-              }}
-            >
+            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--border)", fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.5 }}>
               <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>
-                Sommario AI
+                AI Summary
               </div>
               {data.raw_text_summary}
             </div>
           )}
         </div>
 
-        {/* Right: Data */}
         <div className="card" style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 220px)", minHeight: 500 }}>
           <div className="card-header">
             <span className="card-title" style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              {activeTab === "structured" && <><Database size={18} /> Dati Estratti</>}
-              {activeTab === "items" && <><ShoppingCart size={18} /> Articoli</>}
-              {activeTab === "json" && <><Code size={18} /> Output JSON</>}
+              {activeTab === "structured" && <><Database size={18} /> Structured Data</>}
+              {activeTab === "items" && <><ShoppingCart size={18} /> Items</>}
+              {activeTab === "json" && <><Code size={18} /> Raw JSON</>}
             </span>
             {activeTab === "json" && (
               <button id="copy-json-btn" className="btn btn-sm btn-secondary" onClick={copyJson} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                {copied ? <><Check size={14} /> Copiato!</> : <><Copy size={14} /> Copia</>}
+                {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy</>}
               </button>
             )}
           </div>
@@ -227,19 +189,18 @@ function StructuredView({ data }: { data: ExtractedData }) {
       : "—";
 
   const fields = [
-    { label: "Fornitore", value: data.vendor_name || "—" },
-    { label: "Indirizzo", value: data.vendor_address || "—" },
-    { label: "P.IVA", value: data.vendor_vat || "—" },
-    { label: "Data", value: data.date || "—" },
-    { label: "Ora", value: data.time || "—" },
-    { label: "N. Fattura", value: data.invoice_number || "—" },
-    { label: "Pagamento", value: data.payment_method || "—" },
-    { label: "Lingua", value: data.language?.toUpperCase() || "—" },
+    { label: "Vendor", value: data.vendor_name || "—" },
+    { label: "Address", value: data.vendor_address || "—" },
+    { label: "VAT Number", value: data.vendor_vat || "—" },
+    { label: "Date", value: data.date || "—" },
+    { label: "Time", value: data.time || "—" },
+    { label: "Invoice No.", value: data.invoice_number || "—" },
+    { label: "Payment", value: data.payment_method || "—" },
+    { label: "Language", value: data.language?.toUpperCase() || "—" },
   ];
 
   return (
     <div>
-      {/* Totals highlight */}
       <div
         style={{
           display: "grid",
@@ -252,25 +213,25 @@ function StructuredView({ data }: { data: ExtractedData }) {
         }}
       >
         <div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>TOTALE</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>TOTAL</div>
           <div style={{ fontSize: 24, fontWeight: 700, color: "var(--accent-light)" }}>
             {fmt(data.total_amount, data.currency)}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>IVA ({data.tax_rate ? `${data.tax_rate}%` : "—"})</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>VAT ({data.tax_rate ? `${data.tax_rate}%` : "—"})</div>
           <div style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
             {fmt(data.tax_amount, data.currency)}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>IMPONIBILE</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>SUBTOTAL</div>
           <div style={{ fontSize: 16, fontWeight: 600 }}>
             {fmt(data.subtotal, data.currency)}
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>ARTICOLI</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>ITEMS</div>
           <div style={{ fontSize: 16, fontWeight: 600 }}>
             {data.line_items?.length || 0}
           </div>
@@ -287,18 +248,8 @@ function StructuredView({ data }: { data: ExtractedData }) {
       ))}
 
       {data.notes && (
-        <div
-          style={{
-            marginTop: 16,
-            padding: 12,
-            background: "var(--bg-secondary)",
-            borderRadius: 8,
-            fontSize: 13,
-            color: "var(--text-secondary)",
-            borderLeft: "3px solid var(--accent)",
-          }}
-        >
-          <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>NOTE</div>
+        <div style={{ marginTop: 16, padding: 12, background: "var(--bg-secondary)", borderRadius: 8, fontSize: 13, color: "var(--text-secondary)", borderLeft: "3px solid var(--accent)" }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>NOTES</div>
           {data.notes}
         </div>
       )}
@@ -313,8 +264,8 @@ function ItemsView({ data }: { data: ExtractedData }) {
         <span className="empty-icon" style={{ display: "inline-block", marginBottom: 12 }}>
           <ShoppingCart size={48} color="var(--text-muted)" />
         </span>
-        <p className="empty-text">Nessun articolo trovato</p>
-        <p className="empty-sub">Il documento non contiene righe dettagliate</p>
+        <p className="empty-text">No items found</p>
+        <p className="empty-sub">The document does not contain detailed line items</p>
       </div>
     );
   }
@@ -345,7 +296,7 @@ function ItemsView({ data }: { data: ExtractedData }) {
           padding: "10px 12px",
         }}
       >
-        <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>TOTALE</span>
+        <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>TOTAL</span>
         <span />
         <span />
         <span style={{ fontWeight: 700, color: "var(--accent-light)", fontSize: 16 }}>
@@ -359,7 +310,6 @@ function ItemsView({ data }: { data: ExtractedData }) {
 function JsonView({ data }: { data: ExtractedData }) {
   const json = JSON.stringify(data, null, 2);
 
-  // Simple syntax highlighting
   const highlighted = json
     .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
     .replace(/: "([^"]*)"/g, ': <span class="json-string">"$1"</span>')
@@ -367,10 +317,5 @@ function JsonView({ data }: { data: ExtractedData }) {
     .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>')
     .replace(/: null/g, ': <span class="json-null">null</span>');
 
-  return (
-    <div
-      className="json-output"
-      dangerouslySetInnerHTML={{ __html: highlighted }}
-    />
-  );
+  return <div className="json-output" dangerouslySetInnerHTML={{ __html: highlighted }} />;
 }

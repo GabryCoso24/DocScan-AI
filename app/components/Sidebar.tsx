@@ -32,7 +32,7 @@ export default function Sidebar({ activeView, onNavigate, historyCount }: Sideba
           <span className="nav-item-icon">
             <UploadCloud size={18} />
           </span>
-          Analizza Documento
+          Analyze Document
         </button>
 
         <button
@@ -43,7 +43,7 @@ export default function Sidebar({ activeView, onNavigate, historyCount }: Sideba
           <span className="nav-item-icon">
             <FileText size={18} />
           </span>
-          Storico
+          History
           {historyCount > 0 && (
             <span
               style={{
@@ -69,7 +69,7 @@ export default function Sidebar({ activeView, onNavigate, historyCount }: Sideba
           <span className="nav-item-icon">
             <Settings size={18} />
           </span>
-          Impostazioni
+          Settings
         </button>
       </nav>
 
@@ -101,7 +101,7 @@ export default function Sidebar({ activeView, onNavigate, historyCount }: Sideba
         </div>
         <div style={{ padding: "8px 12px", marginTop: 8 }}>
           <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
-            MVP realizzato per candidatura
+            MVP built for the application
           </div>
           <div style={{ fontSize: 11, color: "var(--accent-light)", fontWeight: 600, marginTop: 2 }}>
             Mamazen

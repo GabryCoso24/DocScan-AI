@@ -18,11 +18,11 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
   };
 
   const docTypeLabel: Record<string, React.ReactNode> = {
-    receipt: <><Receipt size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Scontrino</>,
-    invoice: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Fattura</>,
-    contract: <><ScrollText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Contratto</>,
+    receipt: <><Receipt size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Receipt</>,
+    invoice: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Invoice</>,
+    contract: <><ScrollText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Contract</>,
     id_document: <><IdCard size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> ID</>,
-    other: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Altro</>,
+    other: <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Other</>,
   };
 
   const successCount = history.filter((h) => h.status === "success").length;
@@ -34,12 +34,12 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
     <div>
       <div className="action-bar">
         <div>
-          <h1 className="page-title">Storico Estrazioni</h1>
-          <p className="page-subtitle">{history.length} documenti analizzati in questa sessione</p>
+          <h1 className="page-title">Extraction History</h1>
+          <p className="page-subtitle">{history.length} documents analyzed in this session</p>
         </div>
         {history.length > 0 && (
           <button id="clear-history-btn" className="btn btn-secondary btn-sm" onClick={onClear} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <Trash2 size={14} /> Svuota storico
+            <Trash2 size={14} /> Clear history
           </button>
         )}
       </div>
@@ -47,19 +47,19 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
       {history.length > 0 && (
         <div className="stats-grid" style={{ marginBottom: 24 }}>
           <div className="stat-card">
-            <div className="stat-label">Analizzati</div>
+            <div className="stat-label">Analyzed</div>
             <div className="stat-value">{history.length}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Riusciti</div>
+            <div className="stat-label">Successful</div>
             <div className="stat-value" style={{ color: "var(--success)" }}>{successCount}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Totale Importi</div>
+            <div className="stat-label">Total Amount</div>
             <div className="stat-value" style={{ fontSize: 20 }}>{fmt(totalAmount)}</div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Tempo Medio</div>
+            <div className="stat-label">Average Time</div>
             <div className="stat-value" style={{ fontSize: 20 }}>
               {history.length
                 ? Math.round(
@@ -77,8 +77,8 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
             <span className="empty-icon">
               <History size={48} color="var(--text-muted)" />
             </span>
-            <p className="empty-text">Nessuna estrazione ancora</p>
-            <p className="empty-sub">Carica un documento per iniziare</p>
+            <p className="empty-text">No extractions yet</p>
+            <p className="empty-sub">Upload a document to get started</p>
           </div>
         </div>
       ) : (
@@ -86,14 +86,14 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
           <table className="history-table">
             <thead>
               <tr>
-                <th>Documento</th>
-                <th>Tipo</th>
-                <th>Fornitore</th>
-                <th>Importo</th>
-                <th>Data Doc.</th>
-                <th>Modello</th>
-                <th>Tempo</th>
-                <th>Stato</th>
+                <th>Document</th>
+                <th>Type</th>
+                <th>Vendor</th>
+                <th>Amount</th>
+                <th>Doc. Date</th>
+                <th>Model</th>
+                <th>Time</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -143,7 +143,7 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
                   <td>
                     {item.data?.document_type ? (
                       <span style={{ fontSize: 12, display: "flex", alignItems: "center" }}>
-                        {docTypeLabel[item.data.document_type] || <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Altro</>}
+                        {docTypeLabel[item.data.document_type] || <><FileText size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} /> Other</>}
                       </span>
                     ) : (
                       "—"
@@ -179,7 +179,7 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
                       {item.status === "success" ? (
                         <span style={{ display: "flex", alignItems: "center", gap: 4 }}><CheckCircle size={12} /> OK</span>
                       ) : (
-                        <span style={{ display: "flex", alignItems: "center", gap: 4 }}><XCircle size={12} /> Errore</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4 }}><XCircle size={12} /> Error</span>
                       )}
                     </span>
                   </td>

@@ -127,7 +127,7 @@ function generateDemoData(sourceFileName: string, sourceMimeType: string) {
     return {
       document_type: "invoice",
       vendor_name: "Tech Solutions S.r.l.",
-      vendor_address: "Via Roma 42, 20121 Milano (MI)",
+      vendor_address: "Via Roma 42, 20121 Milan (MI)",
       vendor_vat: "IT12345678901",
       date: "2025-07-08",
       time: null,
@@ -136,24 +136,24 @@ function generateDemoData(sourceFileName: string, sourceMimeType: string) {
       subtotal: 2400.0,
       tax_amount: 528.0,
       tax_rate: 22.0,
-      payment_method: "Bonifico bancario",
+      payment_method: "Bank transfer",
       invoice_number: "FT-2025-00847",
       line_items: [
-        { name: "Sviluppo feature Next.js", quantity: 8, unit_price: 150.0, total: 1200.0 },
-        { name: "Integrazione API Stripe", quantity: 4, unit_price: 150.0, total: 600.0 },
-        { name: "Setup Supabase + Auth", quantity: 4, unit_price: 150.0, total: 600.0 },
+        { name: "Next.js feature development", quantity: 8, unit_price: 150.0, total: 1200.0 },
+        { name: "Stripe API integration", quantity: 4, unit_price: 150.0, total: 600.0 },
+        { name: "Supabase + Auth setup", quantity: 4, unit_price: 150.0, total: 600.0 },
       ],
-      notes: "Pagamento entro 30 giorni. IBAN: IT60 X054 2811 1010 0000 0123 456",
+      notes: "Payment due within 30 days. IBAN: IT60 X054 2811 1010 0000 0123 456",
       confidence: 0.96,
       language: "it",
-      raw_text_summary: "Fattura numero FT-2025-00847 emessa da Tech Solutions S.r.l. per servizi di sviluppo software. Totale imponibile €2400, IVA 22% €528, totale €2928.",
+      raw_text_summary: "Invoice FT-2025-00847 issued by Tech Solutions S.r.l. for software development services. Subtotal €2400, VAT 22% €528, total €2928.",
     };
   }
 
   return {
     document_type: "receipt",
     vendor_name: "Caffè Centrale",
-    vendor_address: "Piazza Duomo 5, 20122 Milano",
+    vendor_address: "Piazza Duomo 5, 20122 Milan",
     vendor_vat: "IT09876543210",
     date: "2025-07-12",
     time: "09:47",
@@ -162,18 +162,18 @@ function generateDemoData(sourceFileName: string, sourceMimeType: string) {
     subtotal: 11.89,
     tax_amount: 0.61,
     tax_rate: 5.1,
-    payment_method: "Carta di credito",
+    payment_method: "Credit card",
     invoice_number: null,
     line_items: [
       { name: "Cappuccino", quantity: 2, unit_price: 1.5, total: 3.0 },
-      { name: "Cornetto integrale", quantity: 2, unit_price: 1.8, total: 3.6 },
-      { name: "Acqua naturale 0.5L", quantity: 1, unit_price: 1.5, total: 1.5 },
-      { name: "Tramezzino tonno", quantity: 1, unit_price: 3.5, total: 3.5 },
+      { name: "Wholegrain croissant", quantity: 2, unit_price: 1.8, total: 3.6 },
+      { name: "Still water 0.5L", quantity: 1, unit_price: 1.5, total: 1.5 },
+      { name: "Tuna sandwich", quantity: 1, unit_price: 3.5, total: 3.5 },
     ],
     notes: null,
     confidence: 0.93,
     language: "it",
-    raw_text_summary: "Scontrino bar caffè con 4 articoli: 2 cappuccini, 2 cornetti, 1 acqua, 1 tramezzino. Totale €12.50 pagato con carta.",
+    raw_text_summary: "Coffee bar receipt with 4 items: 2 cappuccinos, 2 croissants, 1 water, 1 sandwich. Total €12.50 paid by card.",
   };
 }
 
@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
 
     if (isAuthError(err)) {
       return NextResponse.json(
-        { error: "API key non valida. Controlla le impostazioni." },
+        { error: "Invalid API key. Check your environment variables." },
         { status: 401 }
       );
     }
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
       // Return immediately — client handles countdown + auto-retry
       return NextResponse.json(
         {
-          error: "Rate limit OpenRouter raggiunto. Riprovo automaticamente...",
+          error: "OpenRouter rate limit reached. Retrying automatically...",
           retry_after_seconds: 5,
         },
         { status: 429 }
@@ -249,13 +249,13 @@ export async function POST(req: NextRequest) {
     const msg = err?.message || "";
     if (msg.includes("JSON") || msg.includes("SyntaxError")) {
       return NextResponse.json(
-        { error: "Il modello non ha restituito JSON valido. Riprova." },
+        { error: "The model did not return valid JSON. Please try again." },
         { status: 502 }
       );
     }
 
     return NextResponse.json(
-      { error: msg || "Errore interno del server" },
+      { error: msg || "Internal server error" },
       { status: 500 }
     );
   }

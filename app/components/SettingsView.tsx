@@ -5,9 +5,9 @@ import { Info, Target, Clock, Wrench, FileJson, Rocket, KeyRound, FileCode2 } fr
 export default function SettingsView() {
   return (
     <div>
-      <h1 className="page-title">Impostazioni</h1>
+      <h1 className="page-title">Settings</h1>
       <p className="page-subtitle">
-        Configura il deployment tramite environment variables e consulta i dettagli tecnici del progetto
+        Configure deployment via environment variables and review the technical details of the project
       </p>
 
       <div style={{ maxWidth: 640 }}>
@@ -75,8 +75,12 @@ export default function SettingsView() {
           <div className="card-body">
             <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
               {[
-                [<Target key="scopo" size={14} />, "Scope", "MVP for the Mamazen application process — AI Full-Stack Developer"],
-                [<Wrench key="stack" size={14} />, "Stack", "Next.js 16 · TypeScript · OpenRouter"],
+                [<Target key="scope" size={14} />, "Scope", "MVP for the Mamazen application process — AI Full-Stack Developer"],
+                  [
+                    <Wrench key="stack" size={14} />,
+                    "Stack",
+                    "Next.js 16 App Router · React 19 · TypeScript 5 · OpenRouter API · PDF.js · Vercel-ready",
+                  ],
                 [<FileJson key="feat" size={14} />, "Features", "Upload, AI extraction, structured JSON, history, demo mode"],
                 [<Rocket key="deploy" size={14} />, "Deploy", "Vercel-ready with zero config"],
               ].map(([icon, label, value]) => (
