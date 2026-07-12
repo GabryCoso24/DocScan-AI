@@ -8,10 +8,11 @@ import SettingsView from "./components/SettingsView";
 import Toast from "./components/Toast";
 import { ExtractionResult } from "./types";
 
-import { Search, History, Settings as SettingsIcon } from "lucide-react";
+import { Search, History, Settings as SettingsIcon, Menu } from "lucide-react";
 
 export default function Home() {
   const [activeView, setActiveView] = useState<"upload" | "history" | "settings">("upload");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [history, setHistory] = useState<ExtractionResult[]>([]);
 
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -27,10 +28,25 @@ export default function Home() {
 
   return (
     <div className="app-layout">
-      <Sidebar activeView={activeView} onNavigate={setActiveView} historyCount={history.length} />
+      <Sidebar 
+        activeView={activeView} 
+        onNavigate={(view) => {
+          setActiveView(view);
+          setSidebarOpen(false);
+        }} 
+        historyCount={history.length} 
+        isOpen={sidebarOpen}
+      />
+      <div 
+        className={`mobile-overlay ${sidebarOpen ? "open" : ""}`} 
+        onClick={() => setSidebarOpen(false)} 
+      />
       <div className="main-content">
         <header className="header">
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className="menu-toggle" onClick={() => setSidebarOpen(true)}>
+              <Menu size={24} />
+            </button>
             <span className="header-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {activeView === "upload" && <><Search size={20} /> Analyze Document</>}
               {activeView === "history" && <><History size={20} /> Extraction History</>}

@@ -83,8 +83,9 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
         </div>
       ) : (
         <div className="card">
-          <table className="history-table">
-            <thead>
+          <div style={{ overflowX: "auto" }}>
+            <table className="history-table">
+              <thead>
               <tr>
                 <th>Document</th>
                 <th>Type</th>
@@ -186,7 +187,8 @@ export default function HistoryView({ history, onClear }: HistoryViewProps) {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -6,11 +6,12 @@ interface SidebarProps {
   activeView: "upload" | "history" | "settings";
   onNavigate: (view: "upload" | "history" | "settings") => void;
   historyCount: number;
+  isOpen?: boolean;
 }
 
-export default function Sidebar({ activeView, onNavigate, historyCount }: SidebarProps) {
+export default function Sidebar({ activeView, onNavigate, historyCount, isOpen }: SidebarProps) {
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? "open" : ""}`}>
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">
           <ScanSearch size={28} color="var(--accent)" />
