@@ -4,22 +4,16 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ExtractionResult } from "@/types";
 import ResultPanel from "./ResultPanel";
-import { AlertTriangle, Clock, FileUp } from "lucide-react";
+import { Clock, FileUp } from "lucide-react";
 
 interface UploadViewProps {
-  apiKey: string;
-  selectedModel: string;
   onResult: (result: ExtractionResult) => void;
   onToast: (msg: string, type: "success" | "error") => void;
-  onGoSettings: () => void;
 }
 
 export default function UploadView({
-  apiKey,
-  selectedModel,
   onResult,
   onToast,
-  onGoSettings,
 }: UploadViewProps) {
   const [dragOver, setDragOver] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -64,8 +58,8 @@ export default function UploadView({
 
   const processFile = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith("image/")) {
-        onToast("Per favore carica un'immagine (JPG, PNG, WebP, HEIC)", "error");
+      if (!isSupportedFile(file)) {
+        onToast("Per favore carica un'immagine o un PDF (JPG, PNG, WebP, HEIC, PDF)", "error");
         return;
       }
       if (file.size > 20 * 1024 * 1024) {
@@ -77,64 +71,47 @@ export default function UploadView({
         return;
       }
 
-      // Create preview URL
-      const objectUrl = URL.createObjectURL(file);
+      // Create preview URL and upload payload
+      const { base64, mimeType, previewUrl } = await prepareFileForUpload(file);
+      const objectUrl = previewUrl;
       setPreviewUrl(objectUrl);
       setCurrentResult(null);
       setIsProcessing(true);
       setProgress(10);
-      setProgressLabel("Caricamento immagine...");
+      setProgressLabel(isPdfFile(file) ? "Rendering PDF..." : "Caricamento immagine...");
 
       try {
-        // Convert file to base64
-        const base64 = await fileToBase64(file);
         setProgress(30);
         setProgressLabel("Analisi con AI in corso...");
 
-        const demoMode = !apiKey;
+        const response = await fetch("/api/extract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageBase64: base64,
+            mimeType,
+            sourceFileName: file.name,
+            sourceMimeType: file.type,
+          }),
+        });
 
-        let data, processingTime, model;
+        setProgress(80);
+        setProgressLabel("Parsing JSON...");
 
-        if (demoMode) {
-          // Simulate AI processing with realistic demo data
-          await sleep(1800);
-          setProgress(70);
-          setProgressLabel("Estrazione dati strutturati...");
-          await sleep(800);
-
-          const demoData = generateDemoData(file.name);
-          data = demoData;
-          processingTime = 2600;
-          model = "google/gemini-3-flash-preview (demo)";
-        } else {
-          const response = await fetch("/api/extract", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              imageBase64: base64,
-              mimeType: file.type,
-              apiKey,
-              model: selectedModel,
-            }),
-          });
-
-          setProgress(80);
-          setProgressLabel("Parsing JSON...");
-
-          if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            if (response.status === 429 && errData.retry_after_seconds) {
-              // Pass the file so it auto-retries after countdown
-              startCooldown(errData.retry_after_seconds, file);
-            }
-            throw new Error(errData.error || `Errore API ${response.status}`);
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          if (response.status === 429 && errData.retry_after_seconds) {
+            // Pass the file so it auto-retries after countdown
+            startCooldown(errData.retry_after_seconds, file);
           }
-
-          const respData = await response.json();
-          data = respData.data;
-          processingTime = respData.processing_time_ms;
-          model = respData.model;
+          throw new Error(errData.error || `Errore API ${response.status}`);
         }
+
+        const respData = await response.json();
+        const data = respData.data;
+        const processingTime = respData.processing_time_ms;
+        const model = respData.model;
+        const isDemo = respData.mode === "demo";
 
         setProgress(95);
         setProgressLabel("Completato!");
@@ -146,7 +123,7 @@ export default function UploadView({
           filename: file.name,
           file_size: file.size,
           image_url: objectUrl,
-          model: model || selectedModel,
+          model: model || "OpenRouter",
           processing_time_ms: processingTime,
           status: "success",
           data,
@@ -157,7 +134,7 @@ export default function UploadView({
         onResult(result);
         setProgress(100);
         onToast(
-          demoMode
+          isDemo
             ? "Demo completata! (modalità senza API key)"
             : `Estrazione completata in ${(processingTime / 1000).toFixed(1)}s`,
           "success"
@@ -170,7 +147,7 @@ export default function UploadView({
           filename: file.name,
           file_size: file.size,
           image_url: objectUrl,
-          model: selectedModel,
+          model: "OpenRouter",
           processing_time_ms: 0,
           status: "error",
           data: null,
@@ -185,7 +162,7 @@ export default function UploadView({
         setProgressLabel("");
       }
     },
-    [apiKey, selectedModel, onResult, onToast, startCooldown]
+    [onResult, onToast, startCooldown]
   );
 
   const handleDrop = useCallback(
@@ -217,42 +194,6 @@ export default function UploadView({
             Carica uno scontrino, fattura o documento — l&apos;AI estrae tutti i dati in JSON strutturato
           </p>
         </div>
-        {!apiKey && (
-          <div
-            style={{
-              background: "var(--warning-bg)",
-              border: "1px solid rgba(245,158,11,0.3)",
-              borderRadius: "var(--radius)",
-              padding: "10px 16px",
-              fontSize: 13,
-              color: "var(--warning)",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              maxWidth: 280,
-            }}
-          >
-            <AlertTriangle size={16} />
-            <span>
-              Modalità demo attiva.{" "}
-              <button
-                onClick={onGoSettings}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--warning)",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                  fontSize: 13,
-                  fontFamily: "inherit",
-                }}
-              >
-                Aggiungi API key
-              </button>{" "}
-              per usare OpenRouter.
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Rate limit cooldown banner */}
@@ -316,7 +257,7 @@ export default function UploadView({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,application/pdf,.pdf"
           style={{ display: "none" }}
           onChange={handleFileInput}
           id="file-input"
@@ -342,12 +283,12 @@ export default function UploadView({
             </h2>
             <p className="upload-subtitle">oppure clicca per selezionare un file</p>
             <div className="upload-formats">
-              {["JPG", "PNG", "WebP", "HEIC", "PDF*"].map((fmt) => (
+              {["JPG", "PNG", "WebP", "HEIC", "PDF"].map((fmt) => (
                 <span key={fmt} className="format-tag">{fmt}</span>
               ))}
             </div>
             <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 12 }}>
-              *PDF: converti in immagine per ora · Max 20MB
+              PDF supportato: viene renderizzata la prima pagina in immagine · Max 20MB
             </p>
           </>
         )}
@@ -364,6 +305,32 @@ export default function UploadView({
 }
 
 // Utilities
+function isPdfFile(file: File) {
+  return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+}
+
+function isSupportedFile(file: File) {
+  return file.type.startsWith("image/") || isPdfFile(file);
+}
+
+async function prepareFileForUpload(file: File): Promise<{ base64: string; mimeType: string; previewUrl: string }> {
+  if (isPdfFile(file)) {
+    const previewUrl = await renderPdfFirstPageToDataUrl(file);
+    return {
+      base64: previewUrl.split(",")[1],
+      mimeType: "image/png",
+      previewUrl,
+    };
+  }
+
+  const previewUrl = URL.createObjectURL(file);
+  return {
+    base64: await fileToBase64(file),
+    mimeType: file.type,
+    previewUrl,
+  };
+}
+
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -378,64 +345,27 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+async function renderPdfFirstPageToDataUrl(file: File): Promise<string> {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  const pdfData = new Uint8Array(await file.arrayBuffer());
+  const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 2 });
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
 
-function generateDemoData(filename: string) {
-  const lc = filename.toLowerCase();
-  const isInvoice = lc.includes("fattura") || lc.includes("invoice");
-
-  if (isInvoice) {
-    return {
-      document_type: "invoice",
-      vendor_name: "Tech Solutions S.r.l.",
-      vendor_address: "Via Roma 42, 20121 Milano (MI)",
-      vendor_vat: "IT12345678901",
-      date: "2025-07-08",
-      time: null,
-      total_amount: 2928.0,
-      currency: "EUR",
-      subtotal: 2400.0,
-      tax_amount: 528.0,
-      tax_rate: 22.0,
-      payment_method: "Bonifico bancario",
-      invoice_number: "FT-2025-00847",
-      line_items: [
-        { name: "Sviluppo feature Next.js", quantity: 8, unit_price: 150.0, total: 1200.0 },
-        { name: "Integrazione API Stripe", quantity: 4, unit_price: 150.0, total: 600.0 },
-        { name: "Setup Supabase + Auth", quantity: 4, unit_price: 150.0, total: 600.0 },
-      ],
-      notes: "Pagamento entro 30 giorni. IBAN: IT60 X054 2811 1010 0000 0123 456",
-      confidence: 0.96,
-      language: "it",
-      raw_text_summary: "Fattura numero FT-2025-00847 emessa da Tech Solutions S.r.l. per servizi di sviluppo software. Totale imponibile €2400, IVA 22% €528, totale €2928.",
-    };
+  if (!context) {
+    throw new Error("Impossibile creare il canvas per il PDF");
   }
 
-  return {
-    document_type: "receipt",
-    vendor_name: "Caffè Centrale",
-    vendor_address: "Piazza Duomo 5, 20122 Milano",
-    vendor_vat: "IT09876543210",
-    date: "2025-07-12",
-    time: "09:47",
-    total_amount: 12.5,
-    currency: "EUR",
-    subtotal: 11.89,
-    tax_amount: 0.61,
-    tax_rate: 5.1,
-    payment_method: "Carta di credito",
-    invoice_number: null,
-    line_items: [
-      { name: "Cappuccino", quantity: 2, unit_price: 1.5, total: 3.0 },
-      { name: "Cornetto integrale", quantity: 2, unit_price: 1.8, total: 3.6 },
-      { name: "Acqua naturale 0.5L", quantity: 1, unit_price: 1.5, total: 1.5 },
-      { name: "Tramezzino tonno", quantity: 1, unit_price: 3.5, total: 3.5 },
-    ],
-    notes: null,
-    confidence: 0.93,
-    language: "it",
-    raw_text_summary: "Scontrino bar caffè con 4 articoli: 2 cappuccini, 2 cornetti, 1 acqua, 1 tramezzino. Totale €12.50 pagato con carta.",
-  };
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+
+  await page.render({ canvasContext: context, canvas, viewport }).promise;
+  return canvas.toDataURL("image/png");
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

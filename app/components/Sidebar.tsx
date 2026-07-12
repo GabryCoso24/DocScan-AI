@@ -78,7 +78,13 @@ export default function Sidebar({ activeView, onNavigate, historyCount }: Sideba
         <div style={{ padding: "8px 12px" }}>
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>Stack</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {["Next.js 15", "OpenRouter AI", "TypeScript"].map((tech) => (
+            {[
+              "Next.js 16.2.10",
+              "React 19",
+              "TypeScript",
+              "OpenRouter API",
+              "PDF.js",
+            ].map((tech) => (
               <div key={tech} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <div
                   style={{

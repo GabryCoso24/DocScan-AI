@@ -1,6 +1,6 @@
 # DocScan AI
 
-DocScan AI is a document intelligence MVP for analyzing images of receipts, invoices, contracts, and identity documents, and extracting the data into structured JSON with AI.
+DocScan AI is a document intelligence MVP for analyzing images and PDFs of receipts, invoices, contracts, and identity documents, and extracting the data into structured JSON with AI.
 
 The project was built as an application for Mamazen and is designed to demonstrate a complete flow: document upload, extraction through a selectable model, structured result visualization, and session history.
 
@@ -8,8 +8,9 @@ The project was built as an application for Mamazen and is designed to demonstra
 
 - Drag & drop upload or file picker support
 - Image support for `JPG`, `PNG`, `WebP`, and `HEIC`
+- PDF support with first-page rendering in the browser
 - Demo mode with no API key required and realistic simulated results
-- Data extraction through OpenRouter with selectable models
+- Data extraction through OpenRouter using server-side environment variables
 - Structured JSON output with a typed schema
 - Automatic document type classification
 - Extraction of vendor details, amounts, VAT, dates, payment method, language, and line items
@@ -26,6 +27,7 @@ The project was built as an application for Mamazen and is designed to demonstra
 - TypeScript
 - Vanilla CSS with global variables and custom components
 - OpenRouter API via the `openai` SDK
+- PDF rendering via `pdfjs-dist`
 - `lucide-react` for icons
 
 ## Requirements
@@ -65,29 +67,33 @@ npm run lint
 
 ### Demo Mode
 
-If you do not provide an API key, the app automatically switches to demo mode and generates a realistic simulated result. This is useful for presenting the product or trying the flow without credentials.
+If `OPENROUTER_API_KEY` is not set, the app automatically switches to demo mode and generates a realistic simulated result. This is useful for presenting the product or trying the flow without credentials.
 
 ### Real Mode with OpenRouter
 
-1. Open the **Settings** section in the app
-2. Enter your OpenRouter API key
-3. Select the desired AI model
-4. Go back to **Analyze Document** and upload an image
+1. Create a `.env.local` file in the project root
+2. Add your OpenRouter key as `OPENROUTER_API_KEY`
+3. Optionally set `OPENROUTER_MODEL` to override the default server model
+4. Restart the dev server or redeploy the app
+5. Upload an image or PDF from **Analyze Document**
 
-Available models in the interface:
+Example:
 
-- `google/gemini-3-flash-preview`
-- `nvidia/nemotron-nano-12b-v2-vl:free`
-- `anthropic/claude-3.5-haiku`
+```env
+OPENROUTER_API_KEY=your_key_here
+OPENROUTER_MODEL=google/gemini-3-flash-preview
+```
 
 ## How It Works
 
 1. The user uploads a document image
-2. The file is converted to base64 on the client
-3. The client sends the request to `POST /api/extract`
-4. The server calls OpenRouter with a strict output schema
-5. The JSON response is parsed and displayed in the UI
-6. The result is stored in the session history
+2. If the file is a PDF, the first page is rendered to an image in the browser
+3. The client converts the image to base64 and sends it to `POST /api/extract`
+4. The server reads `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` from the environment
+5. If the key is missing, the route returns a demo payload instead of calling the provider
+6. The server calls OpenRouter with a strict output schema when real mode is enabled
+7. The JSON response is parsed and displayed in the UI
+8. The result is stored in the session history
 
 ## Extracted Data Schema
 
@@ -116,10 +122,13 @@ The extraction logic is implemented in [app/api/extract/route.ts](app/api/extrac
 
 The route:
 
-- accepts `imageBase64`, `mimeType`, `apiKey`, and `model`
-- sends the prompt to OpenRouter
+- accepts `imageBase64`, `mimeType`, `sourceFileName`, and `sourceMimeType`
+- sends the prompt to OpenRouter when `OPENROUTER_API_KEY` is configured
+- falls back to demo data when the API key is missing
 - enforces valid JSON output
 - handles authentication, rate limit, and parsing errors
+
+The PDF flow also improves classification hints by forwarding the original file name and MIME type to the route.
 
 ## Project Structure
 
@@ -159,9 +168,11 @@ mvp/
 ## Operational Notes
 
 - The API key is stored only in memory in the UI for the current session.
+- Real credentials live in `.env.local` and are not exposed to the browser.
 - History is local to the browser session and is not persisted to a database.
 - In case of rate limiting, the client waits and retries automatically.
 - The extraction flow is designed to avoid invented values: fields that are not visible are returned as `null`.
+- In demo mode, PDF documents are treated as invoices for more consistent presentation.
 
 ## Deployment
 
@@ -169,9 +180,10 @@ The project is ready to be deployed on Vercel with minimal configuration.
 
 1. Push the repository to GitHub
 2. Connect the repository to Vercel
-3. Deploy
+3. Add `OPENROUTER_API_KEY` and optionally `OPENROUTER_MODEL` in the Vercel environment variables
+4. Deploy
 
-If you want to use the app in real mode, enter the API key directly from the **Settings** interface.
+There is no API key form in the UI anymore. Configure the environment variables and redeploy.
 
 ## Project Goal
 

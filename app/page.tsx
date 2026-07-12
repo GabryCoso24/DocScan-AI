@@ -1,22 +1,18 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Sidebar from "@/components/Sidebar";
-import UploadView from "@/components/UploadView";
-import HistoryView from "@/components/HistoryView";
-import SettingsView from "@/components/SettingsView";
-import Toast from "@/components/Toast";
-import { ExtractionResult } from "@/types";
+import Sidebar from "./components/Sidebar";
+import UploadView from "./components/UploadView";
+import HistoryView from "./components/HistoryView";
+import SettingsView from "./components/SettingsView";
+import Toast from "./components/Toast";
+import { ExtractionResult } from "./types";
 
-import { Search, History, Settings as SettingsIcon, Bot, Globe } from "lucide-react";
+import { Search, History, Settings as SettingsIcon } from "lucide-react";
 
 export default function Home() {
   const [activeView, setActiveView] = useState<"upload" | "history" | "settings">("upload");
   const [history, setHistory] = useState<ExtractionResult[]>([]);
-
-  // Settings state
-  const [apiKey, setApiKey] = useState("");
-  const [selectedModel, setSelectedModel] = useState("google/gemini-3-flash-preview");
 
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -46,24 +42,15 @@ export default function Home() {
         <main className="page">
           {activeView === "upload" && (
             <UploadView
-              apiKey={apiKey}
-              selectedModel={selectedModel}
               onResult={addToHistory}
               onToast={showToast}
-              onGoSettings={() => setActiveView("settings")}
             />
           )}
           {activeView === "history" && (
             <HistoryView history={history} onClear={() => setHistory([])} />
           )}
           {activeView === "settings" && (
-            <SettingsView
-              apiKey={apiKey}
-              onApiKeyChange={setApiKey}
-              selectedModel={selectedModel}
-              onModelChange={setSelectedModel}
-              onToast={showToast}
-            />
+            <SettingsView />
           )}
         </main>
       </div>
