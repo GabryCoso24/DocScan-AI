@@ -318,30 +318,66 @@ async function prepareFileForUpload(file: File): Promise<{ base64: string; mimeT
     const previewUrl = await renderPdfFirstPageToDataUrl(file);
     return {
       base64: previewUrl.split(",")[1],
-      mimeType: "image/png",
+      mimeType: "image/jpeg",
       previewUrl,
     };
   }
 
+  const dataUrl = await compressImage(file);
+  const base64 = dataUrl.split(",")[1];
   const previewUrl = URL.createObjectURL(file);
+  
   return {
-    base64: await fileToBase64(file),
-    mimeType: file.type,
+    base64,
+    mimeType: "image/jpeg",
     previewUrl,
   };
 }
 
-function fileToBase64(file: File): Promise<string> {
+function compressImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove data URL prefix to get raw base64
-      const base64 = result.split(",")[1];
-      resolve(base64);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement("canvas");
+      let width = img.width;
+      let height = img.height;
+      
+      const MAX_DIMENSION = 2000;
+      
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIMENSION) / width);
+          width = MAX_DIMENSION;
+        } else {
+          width = Math.round((width * MAX_DIMENSION) / height);
+          height = MAX_DIMENSION;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      
+      if (!ctx) {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+        return;
+      }
+      
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.8));
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image for compression"));
+    };
+    
+    img.src = url;
   });
 }
 
@@ -362,8 +398,12 @@ async function renderPdfFirstPageToDataUrl(file: File): Promise<string> {
   canvas.width = viewport.width;
   canvas.height = viewport.height;
 
+  // Fill white background for PDF before rendering
+  context.fillStyle = "white";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
   await page.render({ canvasContext: context, canvas, viewport }).promise;
-  return canvas.toDataURL("image/png");
+  return canvas.toDataURL("image/jpeg", 0.8);
 }
 
 function sleep(ms: number) {
