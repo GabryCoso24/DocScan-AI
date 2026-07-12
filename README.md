@@ -1,127 +1,127 @@
 # DocScan AI
 
-DocScan AI è un MVP di document intelligence per analizzare immagini di scontrini, fatture, contratti e documenti di identità, ed estrarre i dati in JSON strutturato tramite AI.
+DocScan AI is a document intelligence MVP for analyzing images of receipts, invoices, contracts, and identity documents, and extracting the data into structured JSON with AI.
 
-Il progetto è stato realizzato come candidatura per Mamazen ed è pensato per mostrare un flusso completo: upload del documento, estrazione tramite modello selezionabile, visualizzazione strutturata dei risultati e storico di sessione.
+The project was built as an application for Mamazen and is designed to demonstrate a complete flow: document upload, extraction through a selectable model, structured result visualization, and session history.
 
-## Funzionalità
+## Features
 
-- Upload drag & drop o selezione file da filesystem
-- Supporto immagini `JPG`, `PNG`, `WebP` e `HEIC`
-- Modalità demo senza API key, con risultati realistici simulati
-- Estrazione dati tramite OpenRouter con modello selezionabile
-- Output strutturato in JSON con schema tipizzato
-- Classificazione automatica del tipo di documento
-- Estrazione di vendor, importi, IVA, data, metodo di pagamento, lingua e righe articolo
-- Preview del documento caricato
-- Copia del JSON raw negli appunti
-- Storico delle estrazioni nella sessione corrente con statistiche aggregate
-- UI dark premium con effetto glassmorphism e feedback visivi
-- Retry automatico in caso di rate limit del provider
+- Drag & drop upload or file picker support
+- Image support for `JPG`, `PNG`, `WebP`, and `HEIC`
+- Demo mode with no API key required and realistic simulated results
+- Data extraction through OpenRouter with selectable models
+- Structured JSON output with a typed schema
+- Automatic document type classification
+- Extraction of vendor details, amounts, VAT, dates, payment method, language, and line items
+- Document preview
+- Copy raw JSON to clipboard
+- Session-based extraction history with aggregate stats
+- Premium dark UI with glassmorphism effects and visual feedback
+- Automatic retry on provider rate limits
 
-## Stack Tecnico
+## Tech Stack
 
 - Next.js 16 App Router
 - React 19
 - TypeScript
-- CSS vanilla con variabili globali e componenti custom
-- OpenRouter API via SDK `openai`
-- `lucide-react` per le icone
+- Vanilla CSS with global variables and custom components
+- OpenRouter API via the `openai` SDK
+- `lucide-react` for icons
 
-## Requisiti
+## Requirements
 
-- Node.js 20 o superiore
+- Node.js 20 or newer
 - npm
-- Una OpenRouter API key se vuoi usare l’estrazione reale
+- An OpenRouter API key if you want to use real extraction
 
-## Installazione
+## Installation
 
 ```bash
 npm install
 ```
 
-## Avvio in locale
+## Local Development
 
 ```bash
 npm run dev
 ```
 
-L’app sarà disponibile su `http://localhost:3000`.
+The app will be available at `http://localhost:3000`.
 
-## Build di produzione
+## Production Build
 
 ```bash
 npm run build
 npm run start
 ```
 
-## Lint
+## Linting
 
 ```bash
 npm run lint
 ```
 
-## Configurazione
+## Configuration
 
-### Modalità demo
+### Demo Mode
 
-Se non inserisci alcuna API key, l’app entra automaticamente in modalità demo e genera un risultato realistico simulato. È utile per presentare il prodotto o provarne il flusso senza credenziali.
+If you do not provide an API key, the app automatically switches to demo mode and generates a realistic simulated result. This is useful for presenting the product or trying the flow without credentials.
 
-### Modalità reale con OpenRouter
+### Real Mode with OpenRouter
 
-1. Apri la sezione **Impostazioni** nell’app
-2. Inserisci la tua OpenRouter API key
-3. Seleziona il modello AI desiderato
-4. Torna su **Analizza Documento** e carica un’immagine
+1. Open the **Settings** section in the app
+2. Enter your OpenRouter API key
+3. Select the desired AI model
+4. Go back to **Analyze Document** and upload an image
 
-Modelli disponibili nell’interfaccia:
+Available models in the interface:
 
 - `google/gemini-3-flash-preview`
 - `nvidia/nemotron-nano-12b-v2-vl:free`
 - `anthropic/claude-3.5-haiku`
 
-## Come funziona
+## How It Works
 
-1. L’utente carica un’immagine del documento
-2. Il file viene convertito in base64 lato client
-3. Il client invia la richiesta alla route `POST /api/extract`
-4. Il server chiama OpenRouter con uno schema di output rigido
-5. La risposta JSON viene parsata e mostrata nell’interfaccia
-6. Il risultato viene salvato nello storico di sessione
+1. The user uploads a document image
+2. The file is converted to base64 on the client
+3. The client sends the request to `POST /api/extract`
+4. The server calls OpenRouter with a strict output schema
+5. The JSON response is parsed and displayed in the UI
+6. The result is stored in the session history
 
-## Schema dei dati estratti
+## Extracted Data Schema
 
-Il payload estratto include:
+The extracted payload includes:
 
-- tipo documento
-- nome fornitore
-- indirizzo fornitore
-- partita IVA
-- data e ora
-- importo totale
-- valuta
-- imponibile
-- IVA e aliquota
-- metodo di pagamento
-- numero fattura
-- righe articolo
-- note
-- livello di confidenza
-- lingua del documento
-- sommario testuale grezzo
+- document type
+- vendor name
+- vendor address
+- VAT number
+- date and time
+- total amount
+- currency
+- subtotal
+- VAT amount and tax rate
+- payment method
+- invoice number
+- line items
+- notes
+- confidence score
+- document language
+- raw text summary
 
 ## API Route
 
-La logica di estrazione è implementata in [app/api/extract/route.ts](app/api/extract/route.ts).
+The extraction logic is implemented in [app/api/extract/route.ts](app/api/extract/route.ts).
 
-La route:
+The route:
 
-- accetta `imageBase64`, `mimeType`, `apiKey` e `model`
-- invia il prompt al provider OpenRouter
-- forza un output JSON valido
-- gestisce errori di autenticazione, rate limit e parsing
+- accepts `imageBase64`, `mimeType`, `apiKey`, and `model`
+- sends the prompt to OpenRouter
+- enforces valid JSON output
+- handles authentication, rate limit, and parsing errors
 
-## Struttura del progetto
+## Project Structure
 
 ```text
 mvp/
@@ -147,37 +147,37 @@ mvp/
 └── README.md
 ```
 
-## Script disponibili
+## Available Scripts
 
-| Script | Descrizione |
+| Script | Description |
 | --- | --- |
-| `npm run dev` | Avvia il server di sviluppo |
-| `npm run build` | Compila l’app per produzione |
-| `npm run start` | Avvia la build di produzione |
-| `npm run lint` | Esegue ESLint sul codice |
+| `npm run dev` | Starts the development server |
+| `npm run build` | Builds the app for production |
+| `npm run start` | Starts the production build |
+| `npm run lint` | Runs ESLint on the codebase |
 
-## Note operative
+## Operational Notes
 
-- Il progetto salva la API key solo in memoria lato UI per la sessione corrente.
-- Lo storico è locale alla sessione del browser e non persiste su database.
-- In caso di rate limit, il client attende e ritenta automaticamente.
-- L’estrazione è progettata per evitare valori inventati: i campi non visibili vengono restituiti come `null`.
+- The API key is stored only in memory in the UI for the current session.
+- History is local to the browser session and is not persisted to a database.
+- In case of rate limiting, the client waits and retries automatically.
+- The extraction flow is designed to avoid invented values: fields that are not visible are returned as `null`.
 
-## Deploy
+## Deployment
 
-Il progetto è pronto per essere distribuito su Vercel senza configurazioni complesse.
+The project is ready to be deployed on Vercel with minimal configuration.
 
-1. Carica il repository su GitHub
-2. Collega il repo a Vercel
-3. Esegui il deploy
+1. Push the repository to GitHub
+2. Connect the repository to Vercel
+3. Deploy
 
-Se vuoi usare l’app in modalità reale, inserisci la API key direttamente dall’interfaccia in **Impostazioni**.
+If you want to use the app in real mode, enter the API key directly from the **Settings** interface.
 
-## Obiettivo del progetto
+## Project Goal
 
-Questo MVP dimostra un flusso end-to-end di document intelligence con focus su:
+This MVP demonstrates an end-to-end document intelligence flow with a focus on:
 
-- UX chiara e immediata
-- affidabilità dell’output strutturato
-- gestione dei casi limite
-- presentazione del risultato in modo leggibile e professionale
+- clear and immediate UX
+- reliable structured output
+- edge case handling
+- a readable and professional result presentation
